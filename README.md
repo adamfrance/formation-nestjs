@@ -28,4 +28,4 @@ Les jours suivants : `git -C supports pull`, puis `git clone -b jour-2 …` (ou 
 Ouvrez les pages HTML dans votre navigateur (double-clic sur le fichier) : GitHub ne les affiche pas en ligne. Le
 bouton « Copier » de chaque bloc de code copie le code sans les commentaires.
 
-Le fichier `.env` n'est jamais dans le dépôt : chaque corrigé contient `.env.example`, à copier en `.env`.
+Le fichier `.env` n'est jamais dans le dépôt : à partir du jour 2, chaque corrigé contient `.env.example`, à copier en `.env`.
