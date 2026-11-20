@@ -1,0 +1,28 @@
+# À chaque envoi sur GitHub : installer, vérifier le code, tester, construire l'image
+name: ci
+on: [push, pull_request]
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    services:
+      postgres: # une base PostgreSQL pour les tests de bout en bout, le temps du job
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: learnhub
+          POSTGRES_PASSWORD: learnhub
+          POSTGRES_DB: learnhub_test
+        ports:
+          - 5432:5432
+        options: --health-cmd "pg_isready -U learnhub" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:e2e
+      - run: docker build -t learnhub-api .
