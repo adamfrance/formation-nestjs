@@ -57,7 +57,7 @@ DB_PASSWORD=learnhub
 DB_NAME=learnhub
 ```
 
-Les variables `DB_…` serviront cet après-midi, pour PostgreSQL.
+Les variables `DB_…` serviront vendredi matin, quand LearnHub passera à PostgreSQL.
 
 Résultat attendu : avec `PORT=abc`, LearnHub refuse de démarrer et affiche « Configuration invalide » ; relancé normalement, il démarre sur le port 3010.
 
@@ -85,33 +85,3 @@ Dossier : `~/projets/formation-nestjs/learnhub`.
 5. Appeler `?limit=2`, puis `?page=2&limit=2`, puis `?limit=100&page=0`.
 
 Résultat attendu : deux cours et `"total":3` ; le troisième cours seul en page 2 ; un 400 qui cite les règles de `page` et de `limit`.
-
-## Exercice 2.9-A — Le catalogue dans PostgreSQL (25 min)
-
-Dossier : `~/projets/formation-nestjs/learnhub`.
-
-1. Supprimer `src/courses/course.model.ts` ; créer `src/courses/course.entity.ts` : l'entité `Course` (table `courses`) avec `id` (UUID), `title` (120 caractères), `description` (texte, vide par défaut), `priceCents` (entier, 0 par défaut), `published` (faux par défaut), `createdAt` et `updatedAt`.
-2. Dans `src/courses/courses.module.ts`, importer `TypeOrmModule.forFeature([Course])`.
-3. Dans `src/courses/courses.seed.ts`, typer le catalogue de départ en `CreateCourseDto[]`.
-4. Réécrire `CoursesService` sur le repository : `onModuleInit` enregistre le catalogue de départ si la table est vide ; `findAll` avec `findAndCount`, `ILike` pour la recherche, tri par titre, `skip` et `take` pour la page ; `findOne` avec `findOneBy` ; `create`, `update` (`merge` puis `save`) et `remove`.
-5. Mettre à jour les types des contrôleurs des cours et des leçons (`Promise<…>`) et rendre asynchrones les méthodes de `LessonsService` (`await this.coursesService.findOne(…)`).
-6. Créer un cours, le chercher, puis lire la table avec `psql`.
-
-```bash
-curl -s -X POST http://localhost:3010/api/courses -H 'Content-Type: application/json' -d '{"title":"Kafka en pratique"}'
-docker exec postgres-cours psql -U learnhub -d learnhub -c 'SELECT title, "priceCents", published FROM courses ORDER BY title'
-```
-
-Résultat attendu : au démarrage, « Catalogue de départ enregistré : 3 cours » (une seule fois : au démarrage suivant, la table n'est plus vide) ; le cours créé a ses dates ; `psql` affiche quatre cours.
-
-## Exercice 2.10-A — Les leçons dans PostgreSQL (15 min)
-
-Dossier : `~/projets/formation-nestjs/learnhub`.
-
-1. Supprimer `src/lessons/lesson.model.ts` (le contrôleur des leçons importe alors `Lesson` depuis l'entité) ; créer `src/lessons/lesson.entity.ts` : l'entité `Lesson` (table `lessons`) avec `id` (UUID), `title`, `content` (texte, vide par défaut), `position` (entier), `courseId`, et la relation `@ManyToOne` vers `Course`, avec `onDelete: 'CASCADE'` et `@JoinColumn({ name: 'courseId' })` ; la propriété s'écrit `course: Relation<Course>`, comme dans l'exemple.
-2. Dans `src/courses/course.entity.ts`, ajouter le côté `@OneToMany` : `lessons: Relation<Lesson[]>`.
-3. Dans `src/lessons/lessons.module.ts`, importer `TypeOrmModule.forFeature([Lesson])`.
-4. Réécrire `LessonsService` sur le repository : `findAll` triée par position ; `create` calcule la position avec `countBy({ courseId })`.
-5. Créer deux leçons dans « Découvrir NestJS », les lister, puis lire la table : `psql postgres://learnhub:learnhub@localhost/learnhub -c '\d lessons'`.
-
-Résultat attendu : deux leçons, positions 1 et 2 ; dans `\d lessons`, la clé étrangère `courseId` vers `courses(id)` avec `ON DELETE CASCADE`.
