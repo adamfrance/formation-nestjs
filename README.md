@@ -67,3 +67,15 @@ npm run start:dev
 
 Résultat attendu : LearnHub répond sur `http://localhost:3010/api/courses` (Swagger UI sur
 `http://localhost:3010/docs`) et les exemples sur `http://localhost:3001/api/livres`.
+
+## Vérifier la table des exemples
+
+En démarrant, les exemples créent eux-mêmes leur table `livres` si elle n'existe pas encore, puis y rangent trois
+livres. Dans un troisième terminal :
+
+```bash
+docker exec postgres-cours psql -U mediatheque -d mediatheque -c '\dt'
+```
+
+Résultat attendu : la table `livres`. Avant le premier démarrage des exemples, la même commande répond « Did not find
+any relations » : la table n'existe pas encore.
